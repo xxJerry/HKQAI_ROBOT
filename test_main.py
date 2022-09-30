@@ -113,6 +113,25 @@ def go_home():
         home_jpose.append(util.degree2rad(angle))
     s.send(("movej({}, a=1, v=1)".format(home_jpose)+"\n").encode('utf8'))
 
+# circle center [0.445, 0.736, 0.116]
+# location circle radius 0.05
+# hole circle radius 0.014
+
+# (x - 0.445)**2 + (y - 0.736)**2 = 0.05**2
+# x_max = 0.495, y = 0.736, z = 0.116 + 0.01 = 0.126
+phi_xmax = 0
+delta_z = 0.01
+delta_phi = 0.56
+for num in range(int(2*np.pi/(delta_phi/2))):
+    x = 0.445 + 0.05 * np.cos(phi_xmax + num * delta_phi/2)
+    y = 0.736 + 0.05 * np.sin(phi_xmax + num * delta_phi/2)
+    print(x,
+          y,
+          0.126, # z
+          0.334, # rx
+          3.024, # ry
+          0.187) # rz
+
 if __name__ == '__main__':
     # go_home()
     # time.sleep(2)

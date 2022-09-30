@@ -109,7 +109,7 @@ def go_home():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
     home_jpose = []
-    for angle in [90, -30, -120, -120, 0, 0]:
+    for angle in [90, -30, -120, -120, 90, 0]:
         home_jpose.append(util.degree2rad(angle))
     s.send(("movej({}, a=1, v=1)".format(home_jpose)+"\n").encode('utf8'))
 
@@ -119,21 +119,49 @@ def go_home():
 
 # (x - 0.445)**2 + (y - 0.736)**2 = 0.05**2
 # x_max = 0.495, y = 0.736, z = 0.116 + 0.01 = 0.126
-phi_xmax = 0
-delta_z = 0.01
-delta_phi = 0.56
-for num in range(int(2*np.pi/(delta_phi/2))):
-    x = 0.445 + 0.05 * np.cos(phi_xmax + num * delta_phi/2)
-    y = 0.736 + 0.05 * np.sin(phi_xmax + num * delta_phi/2)
-    print(x,
-          y,
-          0.126, # z
-          0.334, # rx
-          3.024, # ry
-          0.187) # rz
+def get_discretized_poses():
+    phi_xmax = 0
+    # delta_z = 0.01
+    delta_phi = 0.56
+    discretized_poses = []
+    for num in range(int(2*np.pi/(delta_phi/2))):
+        x = 0.445 + 0.05 * np.sin(phi_xmax + num * delta_phi/2)
+        y = 0.736 + 0.05 * np.cos(phi_xmax + num * delta_phi/2)
+        discretized_poses.append([x,
+            y,
+            0.124, # z
+            0.334, # rx
+            3.024, # ry
+            0.187]) # rz
+    return discretized_poses
 
 if __name__ == '__main__':
-    # go_home()
-    # time.sleep(2)
-    # print([q for q in map(util.rad2degree, get_joint_states())])
-    get_joint_torques()
+    wpts=[[0.379,0.375,0.229,0.334,3.024,0.187],
+    [0.379,0.707,0.222,0.334,3.024,0.188],
+    [0.450, 0.779, 0.123, 0.334, 3.024, 0.187]
+    ]
+    go_home()
+    time.sleep(12)
+    print([q for q in map(util.rad2degree, get_joint_states())])
+
+    move_to_tcp(wpts[0])
+    time.sleep(12)
+    print([q for q in map(util.rad2degree, get_joint_states())])
+
+    move_to_tcp(wpts[1])
+    time.sleep(12)
+    print([q for q in map(util.rad2degree, get_joint_states())])
+
+    place_poses = get_discretized_poses()
+    for place_pose in place_poses:
+        move_to_tcp(place_pose)
+        time.sleep(12)
+        print([q for q in map(util.rad2degree, get_joint_states())])
+        print("joint_torque:{}".format(get_joint_torques()))
+        move_to_tcp(wpts[1])
+        time.sleep(12)
+        print([q for q in map(util.rad2degree, get_joint_states())])
+
+    go_home()
+    time.sleep(12)
+    print([q for q in map(util.rad2degree, get_joint_states())])

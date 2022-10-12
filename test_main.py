@@ -100,11 +100,27 @@ def check_grasp():
     voltage = struct.unpack('!d', state)
     return voltage[0] > 0.3
 
-def grasp():
-    pass
+def rg_control(target_width):
+    assert(target_width in [0, 28, 80])
+    HOST = "192.168.1.3"
+    PORT = 29999
+    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp_socket.connect((HOST, PORT))
+    tcp_command = "load rg_width{}.urp\n".format(target_width)
+    tcp_socket.send(str.encode(tcp_command))
+    time.sleep(3)
+    tcp_command = "play\n"
+    tcp_socket.send(str.encode(tcp_command))
+    tcp_socket.close()
 
-def operate_gripper():
-    pass
+def grasp():
+    rg_control(28)
+
+def release():
+    rg_control(80)
+
+def detect():
+    rg_control(0)
 
 def go_home():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -114,22 +130,19 @@ def go_home():
         home_jpose.append(util.degree2rad(angle))
     s.send(("movej({}, a=1, v=1)".format(home_jpose)+"\n").encode('utf8'))
 
-# circle center [0.445, 0.736, 0.116]
-# location circle radius 0.05
-# hole circle radius 0.014
-
-# (x - 0.445)**2 + (y - 0.736)**2 = 0.05**2
-# x_max = 0.495, y = 0.736, z = 0.116 + 0.01 = 0.126
-def get_discretized_poses():
-    phi_xmax = 0
+def get_discretized_poses(discretized_center_pose=[0.26460, 0.74696, 0.125, 0.020, 3.136, 0.349], radius=0.035,  delta_phi = 0.56):
+    # circle center [0.445, 0.736, 0.116]
+    # location circle radius 0.05
+    # hole circle radius 0.014
+    # (x - 0.445)**2 + (y - 0.736)**2 = 0.05**2
+    # x_max = 0.495, y = 0.736, z = 0.116 + 0.01 = 0.126
     # delta_z = 0.01
-    delta_phi = 0.56
     discretized_poses = []
     for num in range(int(np.pi/(delta_phi/2))):
-        x = 0.26460 - 0.035 * np.sin(phi_xmax + num * delta_phi/2)
-        y = 0.74696 + 0.035 * np.cos(phi_xmax + num * delta_phi/2)
-        z = 0.125
-        rx, ry, rz = 0.020, 3.136, 0.349
+        x = discretized_center_pose[0] - radius * np.sin(num * delta_phi/2)
+        y = discretized_center_pose[1] + radius * np.cos(num * delta_phi/2)
+        z = discretized_center_pose[2]
+        rx, ry, rz = discretized_center_pose[3:6]
         Ro = np.eye(3)
         Rz = np.eye(3)
         Ro = R.from_rotvec(np.array([rx, ry, rz])).as_matrix()
@@ -143,10 +156,10 @@ def get_discretized_poses():
             rz]) # rz
 
     for num in range(int(np.pi/(delta_phi/2))):
-        x = 0.26460 + 0.035 * np.sin(phi_xmax + num * delta_phi/2)
-        y = 0.74696 + 0.035 * np.cos(phi_xmax + num * delta_phi/2)
-        z = 0.125
-        rx, ry, rz = 0.020, 3.136, 0.349# pending to determine...
+        x = discretized_center_pose[0] + radius * np.sin(num * delta_phi/2)
+        y = discretized_center_pose[1] + radius * np.cos( num * delta_phi/2)
+        z = discretized_center_pose[2]
+        rx, ry, rz = discretized_center_pose[3:6]
         Ro = np.eye(3)
         Rz = np.eye(3)
         Ro = R.from_rotvec(np.array([rx, ry, rz])).as_matrix()
@@ -157,10 +170,11 @@ def get_discretized_poses():
             z, # z
             rx, # rx
             ry, # ry
-            rz]) # rz
+            rz]) # r
+
     return discretized_poses
 
-if __name__ == '__main__':
+def detect_tubes():
     via_points=[[0.26464, 0.41918, 0.27296, 0.034, 3.194, -0.006],
                 [0.26460, 0.74696, 0.18314, 0.033, 3.194, -0.000]]
     go_home()
@@ -201,3 +215,49 @@ if __name__ == '__main__':
     go_home()
     time.sleep(12)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+def detect_holes():
+    via_points=[[0.26464, 0.41918, 0.27296, 0.034, 3.194, -0.006],
+                [0.26460, 0.74696, 0.18314, 0.033, 3.194, -0.000]]
+    go_home()
+    time.sleep(12)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    move_tcp_to(via_points[0])
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    move_tcp_to(via_points[1])
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    # Loop and search about the inside of  centrifuge
+    place_poses = get_discretized_poses([0.26460, 0.74696, 0.110, 0.0219, 3.128, 0.384], 0.044, 0.56)
+    for idx, place_pose in enumerate(place_poses):
+        move_tcp_to(place_pose)
+        time.sleep(4)
+        print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+        tcp_force = np.array(get_tcp_force())
+        print("tcp_force:************************", tcp_force)
+        if tcp_force[2] < 2:
+            print("There is a hole!")
+            if idx < len(place_poses)/2:
+                print("The tube is at the angle of {}".format(idx * (180 * (0.28 / np.pi))))
+            elif idx >= len(place_poses)/2:
+                print("The tube is at the angle of {}".format(-(idx-len(place_poses)/2) * 180 * (0.28 / np.pi)))
+        elif tcp_force[2] >= 2:
+            print("There is nothing!")
+        move_tcp_to(via_points[1])
+        time.sleep(4)
+        print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    move_tcp_to(via_points[0])
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    go_home()
+    time.sleep(12)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+if __name__ == '__main__':
+    detect_holes()

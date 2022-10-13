@@ -101,7 +101,7 @@ def check_grasp():
     return voltage[0] > 0.3
 
 def rg_control(target_width):
-    assert(target_width in [0, 28, 80])
+    # assert(target_width in [0, 28, 80])
     HOST = "192.168.1.3"
     PORT = 29999
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -114,10 +114,10 @@ def rg_control(target_width):
     tcp_socket.close()
 
 def grasp():
-    rg_control(28)
+    rg_control(33)
 
 def release():
-    rg_control(80)
+    rg_control(43)
 
 def detect():
     rg_control(0)
@@ -129,6 +129,7 @@ def go_home():
     for angle in [90, -30, -120, -120, 90, 0]:
         home_jpose.append(util.degree2rad(angle))
     s.send(("movej({}, a=1, v=1)".format(home_jpose)+"\n").encode('utf8'))
+    s.close()
 
 def get_discretized_poses(discretized_center_pose=[0.26460, 0.74696, 0.125, 0.020, 3.136, 0.349], radius=0.035,  delta_phi = 0.56):
     # circle center [0.445, 0.736, 0.116]
@@ -196,6 +197,7 @@ def detect_tubes():
         time.sleep(4)
         print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
         tcp_force = np.array(get_tcp_force())
+        print("tcp_force:************************", tcp_force)
         if tcp_force[2] >= -2:
             print("There is a tube!")
             if idx < len(place_poses)/2:
@@ -259,5 +261,69 @@ def detect_holes():
     time.sleep(12)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
+def pick():
+    rg_control(43)
+    time.sleep(5)
+    go_home()
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+
+    above_pick_pose = [0.429, 0.246, 0.239, 3.099, -0.342, -0.013]
+    pick_pose = [0.429, 0.246, 0.009, 3.099, -0.342, -0.013]
+
+    move_tcp_to(above_pick_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    move_tcp_to(pick_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    rg_control(33)
+
+    time.sleep(10)
+    move_tcp_to(above_pick_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+def place():
+    middle_pose = [0.272, 0.478, 0.323, 3.099, -0.342, -0.013]
+    approach_place_pose = [0.256, 0.717, 0.241, 3.818, -0.406, 0.097]
+    pre_place_pose = [0.268, 0.716, 0.188, 3.818, -0.406, 0.097]
+    place_pose = [0.277, 0.770, 0.122, 3.818, -0.406, 0.097]
+
+    move_tcp_to(middle_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    move_tcp_to(approach_place_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    move_tcp_to(pre_place_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))   
+
+    move_tcp_to(place_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))   
+
+    rg_control(43)
+    time.sleep(10)
+
+    move_tcp_to(pre_place_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    move_tcp_to(approach_place_pose)
+    time.sleep(10)
+    print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
+
+    go_home()
+
 if __name__ == '__main__':
-    detect_holes()
+    pick()
+    time.sleep(10)
+    place()
+

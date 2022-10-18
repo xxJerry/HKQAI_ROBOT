@@ -108,7 +108,7 @@ def rg_control(target_width):
     tcp_socket.connect((HOST, PORT))
     tcp_command = "load rg_width{}.urp\n".format(target_width)
     tcp_socket.send(str.encode(tcp_command))
-    time.sleep(3)
+    time.sleep(2)
     tcp_command = "play\n"
     tcp_socket.send(str.encode(tcp_command))
     tcp_socket.close()
@@ -179,15 +179,15 @@ def detect_tubes():
     via_points=[[0.26464, 0.41918, 0.27296, 0.034, 3.194, -0.006],
                 [0.26460, 0.74696, 0.18314, 0.033, 3.194, -0.000]]
     go_home()
-    time.sleep(12)
+    time.sleep(1)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     move_tcp_to(via_points[0])
-    time.sleep(10)
+    time.sleep(1)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     move_tcp_to(via_points[1])
-    time.sleep(10)
+    time.sleep(1)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     # Loop and search about the inside of  centrifuge
@@ -263,9 +263,9 @@ def detect_holes():
 
 def pick():
     rg_control(43)
-    time.sleep(5)
+    time.sleep(2)
     go_home()
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
 
@@ -273,18 +273,18 @@ def pick():
     pick_pose = [0.429, 0.246, 0.009, 3.099, -0.342, -0.013]
 
     move_tcp_to(above_pick_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     move_tcp_to(pick_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     rg_control(33)
 
-    time.sleep(10)
+    time.sleep(2)
     move_tcp_to(above_pick_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
 def place():
@@ -294,36 +294,37 @@ def place():
     place_pose = [0.277, 0.770, 0.122, 3.818, -0.406, 0.097]
 
     move_tcp_to(middle_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     move_tcp_to(approach_place_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     move_tcp_to(pre_place_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))   
 
     move_tcp_to(place_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))   
 
     rg_control(43)
-    time.sleep(10)
+    time.sleep(2)
 
     move_tcp_to(pre_place_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     move_tcp_to(approach_place_pose)
-    time.sleep(10)
+    time.sleep(2)
     print("joint_states: {}".format([q for q in map(util.rad2degree, get_joint_states())]))
 
     go_home()
 
 if __name__ == '__main__':
     pick()
-    time.sleep(10)
+    time.sleep(2)
     place()
+    # go_home()
 

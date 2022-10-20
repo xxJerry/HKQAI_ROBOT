@@ -1,27 +1,29 @@
-import numpy as np
-from scipy.spatial.transform import Rotation as R
-import socket
 import time
 import struct
-import util
+import socket
+import numpy as np
+from scipy.spatial.transform import Rotation as R
 import rtde
+import util
 
 HOST = "192.168.1.3"
 PORT = 30003
 
-
-def get_current_tcp():
+def get_current_tcp(): # x, y, z, rx, ry, rz
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_socket.connect((HOST, PORT))
     data = tcp_socket.recv(1108)
-    position = struct.unpack('!6d', data[444:492])
+    tcp_pose = struct.unpack('!6d', data[444:492])
     tcp_socket.close()
-    return np.asarray(position)
 
-def get_current_pos():  # x, y, theta
-    tcp = get_current_tcp()
-    rpy = util.rv2rpy(tcp[3], tcp[4], tcp[5])
-    return np.asarray([tcp[0], tcp[1], rpy[-1]])
+    return np.asarray(tcp_pose)
+
+def get_current_tcp_in_rpy():  
+    tcp_pose = get_current_tcp()
+    rpy = util.rv2rpy(tcp_pose[3], tcp_pose[4], tcp_pose[5])
+    tcp_pose[3:6] = rpy
+
+    return tcp_pose
 
 def move_tcp_to(target_tcp):
     tool_acc = 1.2  # Safe: 0.5
@@ -45,11 +47,6 @@ def move_tcp_to(target_tcp):
         rpy = util.rv2rpy(actual_pos[3], actual_pos[4], actual_pos[5])
         time.sleep(0.01)
 
-def get_joint_torques():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((HOST, PORT))
-    
-
 def increase_move(delta_x, delta_y, delta_z, delta_theta):
     tcp = get_current_tcp()
     rpy = util.rv2rpy(tcp[3], tcp[4], tcp[5])
@@ -65,6 +62,7 @@ def get_digital_output():
     data = tcp_socket.recv(1108)
     tool = struct.unpack('!d', data[1044:1052])[0]
     tcp_socket.close()
+
     return tool
 
 def get_tcp_force():
@@ -76,6 +74,7 @@ def get_tcp_force():
     con.send_start()
     state = con.receive(True)
     actual_TCP_force = struct.unpack('!6d', state)
+
     return actual_TCP_force
 
 def get_joint_states():
@@ -87,6 +86,7 @@ def get_joint_states():
     con.send_start()
     state = con.receive(True)
     actual_q = struct.unpack('!6d', state)
+
     return actual_q
 
 def check_grasp():
@@ -98,6 +98,7 @@ def check_grasp():
     con.send_start()
     state = con.receive(True)
     voltage = struct.unpack('!d', state)
+
     return voltage[0] > 0.3
 
 def rg_control(target_width):
@@ -326,5 +327,3 @@ if __name__ == '__main__':
     pick()
     time.sleep(2)
     place()
-    # go_home()
-

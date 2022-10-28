@@ -4,6 +4,20 @@ import serial
 import time
 
 
+def weight_tare(bal_port: str = 'COM3', bal_baudrate: int = 1200):
+	balance = serial.Serial(port=bal_port, baudrate=bal_baudrate)
+	balance.write(b'TARE\r')
+	balance.close()
+
+
+def weight_measure(bal_port: str = 'COM3', bal_baudrate: int = 1200):
+	balance = serial.Serial(port=bal_port, baudrate=bal_baudrate)
+	balance.write(b'PRINT\r')
+	weight = float(balance.readline().decode().strip().replace(' ', '')[:-1])
+	balance.close()
+	return weight
+
+
 def get_target_weight(target: float, pump_port: str = 'COM6', \
 					  pump_baudrate: int = 9600, bal_port: str = 'COM3', bal_baudrate: int = 1200):
 	# 连接蠕动泵
@@ -26,13 +40,13 @@ def get_target_weight(target: float, pump_port: str = 'COM6', \
 	start_pump_flag = True
 	while True:
 		balance.write(b'PRINT\r')
-		mass = float(balance.readline().decode().strip()[:-1])
+		mass = float(balance.readline().decode().strip().replace(' ', '')[:-1])
 		mass_diff = target - mass
 
 		if mass_diff <= 0.03:
 			# 停止通道1
 			pump.write(b'1I\r')
-			break 
+			break
 		elif mass_diff <= 1:
 			if speed_adjust_flag:
 				# 设置通道1的转速为 10 rpm
@@ -51,11 +65,12 @@ def get_target_weight(target: float, pump_port: str = 'COM6', \
 	# 获取完全静止后的准确质量
 	time.sleep(1)
 	balance.write(b'PRINT\r')
-	mass = float(balance.readline().decode().strip()[:-1])
-	print("The overall weight is: {}".format(mass))
+	mass = float(balance.readline().decode().strip().replace(' ', '')[:-1])
+	print("The overall weight is: {:.3f}".format(mass))
 
 	pump.close()
 	balance.close()
+
 
 if __name__ == '__main__':
 	get_target_weight(target=50)

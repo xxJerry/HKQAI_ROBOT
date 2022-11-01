@@ -66,11 +66,12 @@ def get_target_weight(target: float, pump_port: str = 'COM6', \
 	time.sleep(1)
 	balance.write(b'PRINT\r')
 	mass = float(balance.readline().decode().strip().replace(' ', '')[:-1])
-	print("The overall weight is: {:.3f}".format(mass))
+	# print("The overall weight is: {:.3f}".format(mass))
 
 	pump.close()
 	balance.close()
+	return mass
 
 
 if __name__ == '__main__':
-	get_target_weight(target=50)
+	print(get_target_weight(target=50))

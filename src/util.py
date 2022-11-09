@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # rot vector to rot matrix
 def rv2rm(rx, ry, rz):
     theta = np.linalg.norm([rx, ry, rz])
@@ -96,10 +97,12 @@ def rpy2rv(rpy):
     rv = rm2rv(R)
     return rv
 
+
 def degree2rad(degree_expr):
     rad_expr = (degree_expr/180) * np.pi
-    return  rad_expr
+    return rad_expr
+
 
 def rad2degree(rad_expr):
     degree_expr = (rad_expr/np.pi) * 180
-    return  degree_expr
+    return degree_expr

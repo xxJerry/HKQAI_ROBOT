@@ -1,7 +1,8 @@
 import serial
 import time
 
-def reglo_icc_serial_test(dev:str, baudrate=9600, timeout=0.5):
+
+def reglo_icc_serial_test(dev: str, baudrate=9600, timeout=0.5):
 	# Create a connect
 	ser = serial.Serial(port=dev, baudrate=baudrate, timeout=timeout)
 	print(ser.name)

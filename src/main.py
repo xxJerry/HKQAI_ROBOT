@@ -10,12 +10,16 @@ import socket
 import time
 
 from weight import weight_tare, weight_measure, get_target_weight
+from robot_test import TcpSocket
 
 HOST1 = "192.168.1.3"
 HOST2 = "192.168.1.4"
 PORT = 29999
-# PORT = 30003
-TIMEOUT = 1200
+PLAY_COMMAND = 'play\n'
+STOP_COMMAND = 'stop\n'
+PROGRAM_STATE_COMMAND = "programState\n"
+
+
 time_accu = 0
 
 
@@ -23,51 +27,79 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
     global time_accu
 
     if RG2_command is not None:
-        tcp_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        tcp_socket1.settimeout(TIMEOUT)
-        tcp_socket1.connect((HOST1, PORT))
-        tcp_command = RG2_command
-        tcp_socket1.send(str.encode(tcp_command))
+        tcp_socket1 = TcpSocket(HOST1)
+        tcp_socket1.create_socket()
+        tcp_socket1.build_connect()
+        tcp_socket1.send_command(RG2_command.encode())
+        print(tcp_socket1.recv_data())
         time.sleep(1)
-        tcp_command = "play\n"
-        tcp_socket1.send(str.encode(tcp_command))
+        tcp_socket1.send_command(PLAY_COMMAND.encode())
+        print(tcp_socket1.recv_data())
+
+        # tcp_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # # tcp_socket1.settimeout(TIMEOUT)
+        # tcp_socket1.connect((HOST1, PORT))
+        # tcp_command = RG2_command
+        # tcp_socket1.send(str.encode(tcp_command))
+        # time.sleep(1)
+        # tcp_command = "play\n"
+        # tcp_socket1.send(str.encode(tcp_command))
 
         time.sleep(1)
 
     if DH_command is not None:
-        tcp_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        tcp_socket2.settimeout(TIMEOUT)
-        tcp_socket2.connect((HOST2, PORT))
-        tcp_command = DH_command
-        tcp_socket2.send(str.encode(tcp_command))
+        tcp_socket2 = TcpSocket(HOST2)
+        tcp_socket2.create_socket()
+        tcp_socket2.build_connect()
+        tcp_socket2.send_command(DH_command.encode())
+        print(tcp_socket2.recv_data())
         time.sleep(1)
-        tcp_command = "play\n"
-        tcp_socket2.send(str.encode(tcp_command))
+        tcp_socket2.send_command(PLAY_COMMAND.encode())
+        print(tcp_socket2.recv_data())
 
-    p1_flag = 'PLAYING'
-    p2_flag = 'PLAYING'
+        # tcp_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # # tcp_socket2.settimeout(TIMEOUT)
+        # tcp_socket2.connect((HOST2, PORT))
+        # tcp_command = DH_command
+        # tcp_socket2.send(str.encode(tcp_command))
+        # time.sleep(1)
+        # tcp_command = "play\n"
+        # tcp_socket2.send(str.encode(tcp_command))
+
+    p1_flag = 'PLAYING' if not RG2_command else 'STOPPED'
+    p2_flag = 'PLAYING' if not DH_command else 'STOPPED'
+
     while p1_flag != 'STOPPED' or p2_flag != 'STOPPED':
         if RG2_command is not None:
-            tcp_socket1.send("programState\n".encode())
-            p1_flag = tcp_socket1.recv(64).decode().strip().split()[0]
-            print("At time {}s, the program at RG2 is {}".format(time_accu, p1_flag))
+            next_command = tcp_socket1.send_command(PROGRAM_STATE_COMMAND.encode())
+            if next_command is not None:
+                tcp_socket1.send_command(next_command.encode())
+                print(tcp_socket1.recv_data())
+            else:
+                p1_flag = tcp_socket1.recv_data().split()[0]
+                print("At time {}s, the program at RG2 is {}".format(time_accu, p1_flag))
         else:
-            p1_flag = 'STOPPED'
+            pass
 
         if DH_command is not None:
-            tcp_socket2.send("programState\n".encode())
-            p2_flag = tcp_socket2.recv(64).decode().strip().split()[0]
-            print("At time {}s, the program at DH is {}".format(time_accu, p2_flag))
+            next_command = tcp_socket2.send_command(PROGRAM_STATE_COMMAND.encode())
+            if next_command is not None:
+                tcp_socket2.send_command(next_command.encode())
+                print(tcp_socket2.recv_data())
+            else:
+                p2_flag = tcp_socket2.recv_data().split()[0]
+                print("At time {}s, the program at DH is {}".format(time_accu, p2_flag))
         else:
-            p2_flag = 'STOPPED'
+            pass 
+
         time.sleep(1)
         time_accu += 1
 
     if RG2_command is not None:
-        tcp_socket1.close()
+        tcp_socket1.close_socket()
 
     if DH_command is not None:
-        tcp_socket2.close()
+        tcp_socket2.close_socket()
 
 
 def put_tube_cap_on_balance(tube_no: int):
@@ -140,6 +172,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 # get_product()
 # put_tube_cap_on_balance(1)

@@ -75,7 +75,7 @@ class TcpSocket():
 
 	@error_handler(True)
 	def recv_data(self, bufsize : int = 1024):
-		data = self.tcp_socket.recv(bufsize=bufsize)
+		data = self.tcp_socket.recv(bufsize=bufsize).decode().strip()
 		return data
 
 	@error_handler(False)

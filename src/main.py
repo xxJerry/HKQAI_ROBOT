@@ -30,10 +30,10 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
         tcp_socket1 = TcpSocket(HOST1)
         tcp_socket1.create_socket()
         tcp_socket1.build_connect()
-        tcp_socket1.send_command(RG2_command.encode())
+        tcp_socket1.send_command(RG2_command)
         print(tcp_socket1.recv_data())
         time.sleep(1)
-        tcp_socket1.send_command(PLAY_COMMAND.encode())
+        tcp_socket1.send_command(PLAY_COMMAND)
         print(tcp_socket1.recv_data())
 
         # tcp_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,10 +51,10 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
         tcp_socket2 = TcpSocket(HOST2)
         tcp_socket2.create_socket()
         tcp_socket2.build_connect()
-        tcp_socket2.send_command(DH_command.encode())
+        tcp_socket2.send_command(DH_command)
         print(tcp_socket2.recv_data())
         time.sleep(1)
-        tcp_socket2.send_command(PLAY_COMMAND.encode())
+        tcp_socket2.send_command(PLAY_COMMAND)
         print(tcp_socket2.recv_data())
 
         # tcp_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -71,9 +71,9 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
 
     while p1_flag != 'STOPPED' or p2_flag != 'STOPPED':
         if RG2_command is not None:
-            next_command = tcp_socket1.send_command(PROGRAM_STATE_COMMAND.encode())
+            next_command = tcp_socket1.send_command(PROGRAM_STATE_COMMAND)
             if next_command is not None:
-                tcp_socket1.send_command(next_command.encode())
+                tcp_socket1.send_command(next_command)
                 print(tcp_socket1.recv_data())
             else:
                 p1_flag = tcp_socket1.recv_data().split()[0]
@@ -82,9 +82,9 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
             pass
 
         if DH_command is not None:
-            next_command = tcp_socket2.send_command(PROGRAM_STATE_COMMAND.encode())
+            next_command = tcp_socket2.send_command(PROGRAM_STATE_COMMAND)
             if next_command is not None:
-                tcp_socket2.send_command(next_command.encode())
+                tcp_socket2.send_command(next_command)
                 print(tcp_socket2.recv_data())
             else:
                 p2_flag = tcp_socket2.recv_data().split()[0]

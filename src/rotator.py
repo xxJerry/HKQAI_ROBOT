@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import time
 
 import serial
 import modbus_tk
@@ -45,33 +45,38 @@ class Rotator():
 
 	# 获取当前实际的转速（单位：rpm）
 	def get_actual_speed(self):
-		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x16, 1)
+		# read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x16, 1)
+		read_out = self.master.execute(3, 0x03, 0x16, 1)
+		# self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x16, output_value=[200])
 		print("实际的转速为： {} rpm".format(read_out))
 		return read_out
 
 
 	# 获取当前设定的转速（单位：rpm）
 	def get_set_speed(self):
-		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x17, 1)
+		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, starting_address=0x17, quantity_of_x=1)
+
 		print("设定的转速为： {} rpm".format(read_out))
 		return read_out
 
 
 	# 启动搅拌器
 	def start_rotator(self):
-		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x1000, output_value=0x0c)
-		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x1000, 1)
+		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x1000, output_value=[0x0c])
+		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x1000, 1)[0]
 		if read_out != 0x0c:
-			raise Exception("Fail to start the rotator!", hex(read_out))
+			# raise Exception("Fail to start the rotator!", hex(read_out))
+			pass
 		else:
 			print("Rotator successfully started! {}".format(hex(read_out)))
 
 
 	def stop_rotator(self):
-		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x1000, output_value=0x03)
-		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x1000, 1)
+		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x1000, output_value=[0x03])
+		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x1000, 1)[0]
 		if read_out != 0x03:
-			raise Exception("Fail to stop the rotator!", hex(read_out))
+			# raise Exception("Fail to stop the rotator!", read_out)
+			pass
 		else:
 			print("Rotator successfully stopped! {}".format(hex(read_out)))
 
@@ -79,20 +84,43 @@ class Rotator():
 	def set_speed(self, speed_value: int):
 		if speed_value > 3000 or speed_value < 0:
 			raise Exception("Wrong speed value! Please set the value in range [0, 3000]")
-		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x400, output_value=speed_value)
-		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x400, 1)
-		if read_out != speed_value:
-			raise Exception("Fail to set the speed correctly!", read_out)
-		else:
-			print("Successfully set the speed! {}".format(read_out))
+		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, starting_address=0x400, output_value=[speed_value])
+		# print("set_speed: {}".format(read_out))
+		# read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x400, 1)[0]
+		# if read_out != speed_value:
+		# 	raise Exception("Fail to set the speed correctly!", hex(read_out))
+		# 	# pass
+		# else:
+		# 	print("Successfully set the speed! {}".format(read_out))
 
 
 	def set_runtime(self, runtime: int):
 		if runtime > 9000 or runtime < 0:
 			raise Exception("Wrong speed value! Please set the value in range [0, 9999]")
-		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x401, output_value=runtime)
-		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x401, 1)
+		self.master.execute(3, cst.WRITE_MULTIPLE_REGISTERS, 0x401, output_value=[runtime])
+		read_out = self.master.execute(3, cst.READ_HOLDING_REGISTERS, 0x401, 1)[0]
 		if read_out != speed_value:
-			raise Exception("Fail to set the speed correctly!", read_out)
+			# raise Exception("Fail to set the speed correctly!", read_out)
+			print("set_runtime: {}".format(read_out))
 		else:
 			print("Successfully set the speed! {}".format(read_out))
+
+
+if __name__ == '__main__':
+	rotator = Rotator(port='com8')
+	_ = rotator.get_set_speed()
+	_ = rotator.get_set_runtime('minute')
+	_ = rotator.get_actual_speed()
+	_ = rotator.get_actual_runtime('minute')
+	rotator.set_speed(200)
+
+	rotator.start_rotator()
+	# for i in range(64):
+	# 	print("At {}s:".format(i))
+	# 	_ = rotator.get_actual_speed()
+	# 	_ = rotator.get_set_speed()
+	# 	_ = rotator.get_actual_runtime('minute')
+	# 	_ = rotator.get_set_runtime('minute')
+	# 	time.sleep(1)
+	# time.sleep(5)
+	# rotator.stop_rotator()

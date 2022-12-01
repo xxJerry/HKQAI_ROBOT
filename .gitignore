@@ -1,4 +1,5 @@
 # JetBrains PyCharm IDE
 .idea/
-.pyc
+*.pyc
 src/__pycache__/
+*.egg-info/

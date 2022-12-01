@@ -73,8 +73,8 @@ pulse_ms = 30
 # cv2.createTrackbar("HUE Max", "HSV", 32, 179, empty)
 # cv2.createTrackbar("SAT Max", "HSV", 255, 255, empty)
 # cv2.createTrackbar("VALUE Max", "HSV", 255, 255, empty)
-lower = np.array([0, 180, 156])     # 适用于橙色乒乓球4<=h<=32
-upper = np.array([240, 255, 255])
+lower = np.array([0, 130, 130])     # 适用于橙色乒乓球4<=h<=32
+upper = np.array([250, 255, 255])
 
 targetPos_x = 0     # 颜色检测得到的x坐标
 targetPos_y = 0     # 颜色检测得到的y坐标
@@ -88,8 +88,10 @@ HoughXs = []
 HoughYs = []
 
 while True:
+
     # img = cv2.imread("45_Color.png")
-    _, img = cap.read()
+    img = cv2.imread("pic.png")
+    # _, img = cap.read()
     # 霍夫圆检测前的处理Start
     b, g, r = cv2.split(img)    # 分离三个颜色
     r = np.int16(r)             # 将红色与蓝色转换为int16，为了后期做差

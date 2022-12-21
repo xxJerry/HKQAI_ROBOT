@@ -10,6 +10,7 @@ import socket
 import time
 
 from weight import weight_tare, weight_measure, get_target_weight
+from rotator import Rotator
 
 HOST1 = "192.168.1.3"
 HOST2 = "192.168.1.4"
@@ -126,7 +127,14 @@ def pick_tube_from_oven():
                    DH_command="load f_tube_out_oven_right.urp\n")
 
 
-def main():
+def main(rotating_time: int = 5):
+    rotator = Rotator(port='com13')
+    rotator.start_rotator()
+    print("Rotator started!")
+    time.sleep(rotating_time)
+    rotator.stop_rotator()
+    print("Rotator stopped!")
+    time.sleep(2)
     get_product()
     time.sleep(1)
     place_tube_in_centrifuge()
@@ -140,6 +148,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # place_tube_in_centrifuge()
 
 # get_product()
 # put_tube_cap_on_balance(1)

@@ -18,7 +18,7 @@ def weight_measure(bal_port: str = 'COM3', bal_baudrate: int = 1200):
 	return weight
 
 
-def get_target_weight(target: float, pump_port: str = 'COM6', \
+def get_target_weight(target: float, pump_port: str = 'COM14', \
 					  pump_baudrate: int = 9600, bal_port: str = 'COM3', bal_baudrate: int = 1200):
 	# 连接蠕动泵
 	pump = serial.Serial(port=pump_port, baudrate=pump_baudrate)

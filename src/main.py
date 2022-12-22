@@ -100,9 +100,9 @@ def get_product(target_weight: float = 50):
 
         cap_weight = tube_cap_weight - tube_weight
         print("The weight of cap is: {}".format(cap_weight))
-        tube_sol_weight = get_target_weight(target_weight-cap_weight)
+        tube_sol_weight = get_target_weight(target_weight - cap_weight)
         print("The weight of tube with cap containing solution is: {}"
-              .format(tube_sol_weight+cap_weight))
+              .format(tube_sol_weight + cap_weight))
 
         recap_tube(str(i))
 
@@ -127,7 +127,38 @@ def pick_tube_from_oven():
                    DH_command="load f_tube_out_oven_right.urp\n")
 
 
-def main(rotating_time: int = 5):
+def arms_connect_test():
+    while True:
+        try:
+            tcp_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            tcp_socket1.settimeout(4)
+            tcp_socket1.connect((HOST1, PORT))
+        except Exception as e:
+            print(e)
+            print("Please check the connection with RG2")
+            _ = input("Please press any key if you solved the issue, and the program will retry.")
+            continue
+        else:
+            print("The connection with RG2 is ok!")
+            tcp_socket1.close()
+            break
+
+    while True:
+        try:
+            tcp_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            tcp_socket2.settimeout(4)
+            tcp_socket2.connect((HOST2, PORT))
+        except Exception as e:
+            print(e)
+            print("Please check the connection with DH")
+            _ = input("Please press any key if you solved the issue, and the program will retry.")
+            continue
+        else:
+            print("The connection with DH is ok!")
+            tcp_socket2.close()
+            break
+
+def main(rotating_time: int = 10):
     rotator = Rotator(port='com13')
     rotator.start_rotator()
     print("Rotator started!")
@@ -147,6 +178,7 @@ def main(rotating_time: int = 5):
 
 
 if __name__ == "__main__":
+    arms_connect_test()
     main()
     # place_tube_in_centrifuge()
 

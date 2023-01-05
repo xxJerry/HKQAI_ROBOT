@@ -28,12 +28,12 @@ def get_target_weight(target: float, pump_port: str = 'COM6', \
 	balance = serial.Serial(port=bal_port, baudrate=bal_baudrate)
 	print("The balance is connected via port: {}".format(bal_port))
 
-	# 设置通道1的方向为顺时针
-	pump.write(b'1J\r')
+	# 设置通道4的方向为顺时针
+	pump.write(b'4J\r')
 	# assert pump.readline().decode() == '*'
 
-	# 设置通道1的转速为 80 rpm
-	pump.write(b'1S008000\r')
+	# 设置通道4的转速为 80 rpm
+	pump.write(b'4S008000\r')
 	# assert pump.readline().decode() == '*'
 
 	speed_adjust_flag = True
@@ -44,22 +44,22 @@ def get_target_weight(target: float, pump_port: str = 'COM6', \
 		mass_diff = target - mass
 
 		if mass_diff <= 0.03:
-			# 停止通道1
-			pump.write(b'1I\r')
+			# 停止通道4
+			pump.write(b'4I\r')
 			break
 		elif mass_diff <= 1:
 			if speed_adjust_flag:
-				# 设置通道1的转速为 10 rpm
-				pump.write(b'1S001000\r')
+				# 设置通道4的转速为 10 rpm
+				pump.write(b'4S001000\r')
 				speed_adjust_flag = False
 			if start_pump_flag:
-				# 启动通道1
-				pump.write(b'1H\r')
+				# 启动通道4
+				pump.write(b'4H\r')
 				start_pump_flag = False
 		else:
 			if start_pump_flag:
-				# 启动通道1
-				pump.write(b'1H\r')
+				# 启动通道4
+				pump.write(b'4H\r')
 			time.sleep(0.5)
 
 	# 获取完全静止后的准确质量
@@ -71,6 +71,19 @@ def get_target_weight(target: float, pump_port: str = 'COM6', \
 	pump.close()
 	balance.close()
 	return mass
+
+def injet_reactants(pump_port: str = 'COM6', pump_baudrate: int = 9600):
+	# 连接蠕动泵
+	pump = serial.Serial(port=pump_port, baudrate=pump_baudrate)
+	print("The pump is connected via port: {}".format(pump_port))
+
+	# 启动通道1
+	pump.write(b'1H\r')
+
+	# 启动通道2
+	pump.write(b'2H\r')
+
+	pump.close()
 
 
 if __name__ == '__main__':

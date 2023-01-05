@@ -1,3 +1,5 @@
+# 本程序作蠕动泵使用参考
+
 import serial
 import time
 

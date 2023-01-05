@@ -72,7 +72,7 @@ def get_target_weight(target: float, pump_port: str = 'COM6', \
 	balance.close()
 	return mass
 
-def injet_reactants(pump_port: str = 'COM6', pump_baudrate: int = 9600):
+def inject_reactants(pump_port: str = 'COM6', pump_baudrate: int = 9600):
 	# 连接蠕动泵
 	pump = serial.Serial(port=pump_port, baudrate=pump_baudrate)
 	print("The pump is connected via port: {}".format(pump_port))

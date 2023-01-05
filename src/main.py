@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 # 1. 接取指定量生成物
-# 2. 放入离心机
-# 3. 从离心机中取出
-# 4. 将离心管放入烘干箱
-# 5. 从烘干箱取出
+# 2. 将离心管放入离心机
+# 3. 从离心机中取出离心管
+# 4. 倒掉离心管内上清液
+# 5. 将离心管放入烘干箱
+# 6. 从烘干箱取出
 
 import socket
 import time
@@ -36,15 +37,6 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
         tcp_socket1.send_command(PLAY_COMMAND)
         print(tcp_socket1.recv_data())
 
-        # tcp_socket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # # tcp_socket1.settimeout(TIMEOUT)
-        # tcp_socket1.connect((HOST1, PORT))
-        # tcp_command = RG2_command
-        # tcp_socket1.send(str.encode(tcp_command))
-        # time.sleep(1)
-        # tcp_command = "play\n"
-        # tcp_socket1.send(str.encode(tcp_command))
-
         time.sleep(1)
 
     if DH_command is not None:
@@ -56,15 +48,6 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
         time.sleep(1)
         tcp_socket2.send_command(PLAY_COMMAND)
         print(tcp_socket2.recv_data())
-
-        # tcp_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # # tcp_socket2.settimeout(TIMEOUT)
-        # tcp_socket2.connect((HOST2, PORT))
-        # tcp_command = DH_command
-        # tcp_socket2.send(str.encode(tcp_command))
-        # time.sleep(1)
-        # tcp_command = "play\n"
-        # tcp_socket2.send(str.encode(tcp_command))
 
     p1_flag = 'PLAYING' if not RG2_command else 'STOPPED'
     p2_flag = 'PLAYING' if not DH_command else 'STOPPED'
@@ -147,6 +130,11 @@ def pick_tube_from_centrifuge():
     socket_command(RG2_command="load f_centrifuge_out_left.urp\n",
                    DH_command="load f_centrifuge_right.urp\n")
 
+def pour_liquid():
+    for i in range(1, 3):
+        socket_command(RG2_command="load f_remove_cap_tube{}_rg2.urp\n".format(i),
+                       DH_command="load f_remove_cap_tube{}_dh.urp\n".format(i))
+
 
 def place_tube_in_oven():
     socket_command(RG2_command="load f_tube_into_oven_left.urp\n",
@@ -164,6 +152,8 @@ def main():
     place_tube_in_centrifuge()
     time.sleep(1)
     pick_tube_from_centrifuge()
+    time.sleep(1)
+    pour_liquid()
     time.sleep(1)
     place_tube_in_oven()
     time.sleep(1)

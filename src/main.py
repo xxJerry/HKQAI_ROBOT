@@ -11,7 +11,7 @@ import socket
 import time
 
 from weight import weight_tare, weight_measure, get_target_weight
-from robot_test import TcpSocket
+from tcp_socket import TcpSocket
 
 HOST1 = "192.168.1.3"
 HOST2 = "192.168.1.4"
@@ -29,7 +29,6 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
 
     if RG2_command is not None:
         tcp_socket1 = TcpSocket(HOST1)
-        tcp_socket1.create_socket()
         tcp_socket1.build_connect()
         tcp_socket1.send_command(RG2_command)
         print(tcp_socket1.recv_data())
@@ -41,7 +40,6 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
 
     if DH_command is not None:
         tcp_socket2 = TcpSocket(HOST2)
-        tcp_socket2.create_socket()
         tcp_socket2.build_connect()
         tcp_socket2.send_command(DH_command)
         print(tcp_socket2.recv_data())
@@ -54,24 +52,16 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
 
     while p1_flag != 'STOPPED' or p2_flag != 'STOPPED':
         if RG2_command is not None:
-            next_command = tcp_socket1.send_command(PROGRAM_STATE_COMMAND)
-            if next_command is not None:
-                tcp_socket1.send_command(next_command)
-                print(tcp_socket1.recv_data())
-            else:
-                p1_flag = tcp_socket1.recv_data().split()[0]
-                print("At time {}s, the program at RG2 is {}".format(time_accu, p1_flag))
+            tcp_socket1.send_command(PROGRAM_STATE_COMMAND)
+            p1_flag = tcp_socket1.recv_data().split()[0]
+            print("At time {}s, the program at RG2 is {}".format(time_accu, p1_flag))
         else:
             pass
 
         if DH_command is not None:
-            next_command = tcp_socket2.send_command(PROGRAM_STATE_COMMAND)
-            if next_command is not None:
-                tcp_socket2.send_command(next_command)
-                print(tcp_socket2.recv_data())
-            else:
-                p2_flag = tcp_socket2.recv_data().split()[0]
-                print("At time {}s, the program at DH is {}".format(time_accu, p2_flag))
+            tcp_socket2.send_command(PROGRAM_STATE_COMMAND)
+            p2_flag = tcp_socket2.recv_data().split()[0]
+            print("At time {}s, the program at DH is {}".format(time_accu, p2_flag))
         else:
             pass 
 
@@ -102,12 +92,12 @@ def recap_tube(tube_no: int):
 def get_product(target_weight: float = 50):
     for i in range(1, 3):
         weight_tare()
-        put_tube_cap_on_balance(str(i))
+        put_tube_cap_on_balance(i)
         time.sleep(3)
         tube_cap_weight = weight_measure()
         print("The weight of tube with cap is: {}".format(tube_cap_weight))
 
-        put_tube_on_balance(str(i))
+        put_tube_on_balance(i)
         time.sleep(3)
         tube_weight = weight_measure()
         print("The weight of tube without cap is: {}".format(tube_weight))
@@ -118,7 +108,7 @@ def get_product(target_weight: float = 50):
         print("The weight of tube with cap containing solution is: {}"
               .format(tube_sol_weight+cap_weight))
 
-        recap_tube(str(i))
+        recap_tube(i)
 
 
 def place_tube_in_centrifuge():
@@ -129,6 +119,7 @@ def place_tube_in_centrifuge():
 def pick_tube_from_centrifuge():
     socket_command(RG2_command="load f_centrifuge_out_left.urp\n",
                    DH_command="load f_centrifuge_right.urp\n")
+
 
 def pour_liquid():
     for i in range(1, 3):

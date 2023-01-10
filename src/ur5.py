@@ -3,10 +3,10 @@ import struct
 import socket
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import rtde
-import util
+from src import rtde
+from src import util
 
-HOST = "192.168.1.3"
+HOST = "192.168.1.4"
 PORT = 30003
 
 def get_current_tcp(): # x, y, z, rx, ry, rz
@@ -324,6 +324,7 @@ def place():
     go_home()
 
 if __name__ == '__main__':
-    pick()
-    time.sleep(2)
-    place()
+    # pick()
+    # time.sleep(2)
+    # place()
+    print(get_current_tcp())

@@ -30,7 +30,7 @@ import logging
 if sys.version_info[0] < 3:
   import serialize
 else:
-  import serialize
+  from src import serialize
 
 DEFAULT_TIMEOUT = 1.0
 

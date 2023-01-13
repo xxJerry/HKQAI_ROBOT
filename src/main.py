@@ -17,6 +17,7 @@ HOST1 = "192.168.1.3"
 HOST2 = "192.168.1.4"
 PORT = 29999
 PLAY_COMMAND = 'play\n'
+PAUSE_COMMAND = 'pause\n'
 STOP_COMMAND = 'stop\n'
 PROGRAM_STATE_COMMAND = "programState\n"
 
@@ -32,41 +33,69 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
         tcp_socket1.build_connect()
         tcp_socket1.send_command(RG2_command)
         print(tcp_socket1.recv_data())
-        time.sleep(1)
+        time.sleep(0.1)
         tcp_socket1.send_command(PLAY_COMMAND)
         print(tcp_socket1.recv_data())
 
-        time.sleep(1)
+        # time.sleep(1)
 
     if DH_command is not None:
         tcp_socket2 = TcpSocket(HOST2)
         tcp_socket2.build_connect()
         tcp_socket2.send_command(DH_command)
         print(tcp_socket2.recv_data())
-        time.sleep(1)
+        time.sleep(0.1)
         tcp_socket2.send_command(PLAY_COMMAND)
         print(tcp_socket2.recv_data())
 
-    p1_flag = 'PLAYING' if not RG2_command else 'STOPPED'
-    p2_flag = 'PLAYING' if not DH_command else 'STOPPED'
+    p1_flag = 'PLAYING' if RG2_command else 'STOPPED'
+    p2_flag = 'PLAYING' if DH_command else 'STOPPED'
 
     while p1_flag != 'STOPPED' or p2_flag != 'STOPPED':
         if RG2_command is not None:
-            tcp_socket1.send_command(PROGRAM_STATE_COMMAND)
-            p1_flag = tcp_socket1.recv_data().split()[0]
-            print("At time {}s, the program at RG2 is {}".format(time_accu, p1_flag))
+            if p2_flag == 'PAUSED' and p1_flag == 'PLAYING':
+                tcp_socket1.send_command(PAUSE_COMMAND)
+                # time.sleep(0.1)
+                # print("Adjusting: RG2 {}".format(tcp_socket1.recv_data()))
+                _ = input("Please press any key once readying for continuing\n")
+                tcp_socket1.send_command(PLAY_COMMAND)
+                # time.sleep(0.1)
+                # print("Adjusting: RG2 {}".format(tcp_socket1.recv_data()))
+                tcp_socket2.send_command(PLAY_COMMAND)
+                # time.sleep(0.1)
+                # print("Adjusting: DH {}".format(tcp_socket2.recv_data()))
+            else:
+                tcp_socket1.send_command(PROGRAM_STATE_COMMAND)
+                time.sleep(0.5)
+                time_accu += 0.5
+                p1_flag = tcp_socket1.recv_data().split()[0]
+                print("At time {}s, the program at RG2 is {}".format(time_accu, p1_flag))
         else:
             pass
 
         if DH_command is not None:
-            tcp_socket2.send_command(PROGRAM_STATE_COMMAND)
-            p2_flag = tcp_socket2.recv_data().split()[0]
-            print("At time {}s, the program at DH is {}".format(time_accu, p2_flag))
+            if p1_flag == 'PAUSED' and p2_flag == 'PLAYING':
+                tcp_socket2.send_command(PAUSE_COMMAND)
+                # time.sleep(0.1)
+                # print("Adjusting: DH {}".format(tcp_socket2.recv_data()))
+                _ = input("Please press any key once readying for continuing\n")
+                tcp_socket1.send_command(PLAY_COMMAND)
+                # time.sleep(0.1)
+                # print("Adjusting: RG2 {}".format(tcp_socket1.recv_data()))
+                tcp_socket2.send_command(PLAY_COMMAND)
+                # time.sleep(0.1)
+                # print("Adjusting: DH {}".format(tcp_socket2.recv_data()))
+            else:
+                tcp_socket2.send_command(PROGRAM_STATE_COMMAND)
+                time.sleep(0.5)
+                time_accu += 0.5
+                p2_flag = tcp_socket2.recv_data().split()[0]
+                print("At time {}s, the program at DH is {}".format(time_accu, p2_flag))
         else:
             pass 
 
-        time.sleep(1)
-        time_accu += 1
+        # time.sleep(1)
+        # time_accu += 1
 
     if RG2_command is not None:
         tcp_socket1.close_socket()
@@ -151,8 +180,8 @@ def main():
     pick_tube_from_oven()
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 
 # get_product()
@@ -161,5 +190,5 @@ if __name__ == "__main__":
 # recap_tube(1)
 # place_tube_in_centrifuge()
 # pick_tube_from_centrifuge()
-# place_tube_in_oven()
+place_tube_in_oven()
 # pick_tube_from_oven()

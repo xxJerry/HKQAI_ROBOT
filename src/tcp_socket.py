@@ -41,7 +41,7 @@ class TcpSocket:
 	def recv_data(self, bufsize: int = 1024):
 		while True:
 			try:
-				return self.tcp_socket.recv(bufsize=bufsize).decode().strip()
+				return self.tcp_socket.recv(bufsize).decode().strip()
 			except ConnectionResetError as e:
 				print("Data receiving failed: {}".format(e))
 				_ = input("Please press any key if ready to retry\n")
@@ -54,15 +54,17 @@ class TcpSocket:
 def connect_test(*, host1, host2, tcp_command):
 	RG2 = TcpSocket(host1)
 	RG2.build_connect()
+	print("Connection with RG2 built!")
 	RG2.close_socket()
 
 	DH = TcpSocket(host2)
 	DH.build_connect()
+	print("Connection with DH built!")
 	DH.close_socket()
 
 
-# if __name__ == '__main__':
-# 	connect_test(tcp_command='play\n', host1='192.168.1.3', host2='192.168.1.4')
+if __name__ == '__main__':
+	connect_test(tcp_command='play\n', host1='192.168.1.3', host2='192.168.1.4')
 
 # RG2 = TcpSocket('192.168.1.3')
 # RG2.create_socket()

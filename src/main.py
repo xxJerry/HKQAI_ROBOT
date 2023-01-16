@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 
-# 1. 接取指定量生成物
-# 2. 将离心管放入离心机
-# 3. 从离心机中取出离心管
-# 4. 倒掉离心管内上清液
-# 5. 将离心管放入烘干箱
-# 6. 从烘干箱取出
+# 实验整体操作流程：
+# 1. PC启动蠕动泵，将反应溶液注入反应容器内
+# 2. 机械臂启动加热装置（按开关）
+# 3. PC启动搅拌器，反应进行预定时长
+# 4. PC停止搅拌器，并控制蠕动泵和电子天平配合机械臂接取指定量生成物（2管）
+# 5. 机械臂将2管离心管放入离心机
+# 6. 机械臂从离心机中取出2管离心管
+# 7. 机械臂倒掉2管离心管内的上清液，且无需盖回盖子
+# 8. 机械臂将2管离心管放入烘干箱
+# 9. 机械臂从烘干箱中取出2管离心管，实验完成
 
-import socket
 import time
 
 from weight import weight_tare, weight_measure, get_target_weight
-from tcp_socket import TcpSocket
+from tcp_socket import TcpSocket, connect_test
 
 HOST1 = "192.168.1.3"
 HOST2 = "192.168.1.4"
@@ -57,7 +60,7 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
                 tcp_socket1.send_command(PAUSE_COMMAND)
                 # time.sleep(0.1)
                 # print("Adjusting: RG2 {}".format(tcp_socket1.recv_data()))
-                _ = input("Please press any key once readying for continuing\n")
+                _ = input("Please press any key once ready for continuing\n")
                 tcp_socket1.send_command(PLAY_COMMAND)
                 # time.sleep(0.1)
                 # print("Adjusting: RG2 {}".format(tcp_socket1.recv_data()))
@@ -78,7 +81,7 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
                 tcp_socket2.send_command(PAUSE_COMMAND)
                 # time.sleep(0.1)
                 # print("Adjusting: DH {}".format(tcp_socket2.recv_data()))
-                _ = input("Please press any key once readying for continuing\n")
+                _ = input("Please press any key once ready for continuing\n")
                 tcp_socket1.send_command(PLAY_COMMAND)
                 # time.sleep(0.1)
                 # print("Adjusting: RG2 {}".format(tcp_socket1.recv_data()))
@@ -190,5 +193,6 @@ def main():
 # recap_tube(1)
 # place_tube_in_centrifuge()
 # pick_tube_from_centrifuge()
+connect_test(host1=HOST1, host2=HOST2)
 place_tube_in_oven()
 # pick_tube_from_oven()

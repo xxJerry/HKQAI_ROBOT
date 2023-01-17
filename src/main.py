@@ -13,8 +13,9 @@
 
 import time
 
-from weight import weight_tare, weight_measure, get_target_weight
+from weight import weight_tare, weight_measure, get_target_weight, inject_reactants
 from tcp_socket import TcpSocket, connect_test
+from rotator import Rotator
 
 HOST1 = "192.168.1.3"
 HOST2 = "192.168.1.4"
@@ -107,6 +108,19 @@ def socket_command(*, RG2_command: str = None, DH_command: str = None):
         tcp_socket2.close_socket()
 
 
+def start_heater():
+    socket_command(RG2_command="load f_start_heater.urp\n")
+
+
+def rotate_reactants(reaction_time: int):
+    rotator = Rotator()
+    rotator.start_rotator()
+    print("Rotator started!")
+    time.sleep(reaction_time)
+    rotator.stop_rotator()
+    print("Rotator stopped!")
+
+
 def put_tube_cap_on_balance(tube_no: int):
     socket_command(RG2_command="load f_pre_get_result_tube{}_rg2.urp\n".format(tube_no))
 
@@ -169,17 +183,24 @@ def pick_tube_from_oven():
                    DH_command="load f_tube_out_oven_right.urp\n")
 
 
-def main():
+def main(reaction_time: int, centrifuge_time: int, oven_time: int):
+    connect_test()
+    inject_reactants()
+    time.sleep(1)
+    start_heater()
+    time.sleep(1)
+    rotate_reactants(reaction_time=reaction_time)
+    time.sleep(1)
     get_product()
     time.sleep(1)
     place_tube_in_centrifuge()
-    time.sleep(1)
+    time.sleep(centrifuge_time)
     pick_tube_from_centrifuge()
     time.sleep(1)
     pour_liquid()
     time.sleep(1)
     place_tube_in_oven()
-    time.sleep(1)
+    time.sleep(oven_time)
     pick_tube_from_oven()
 
 

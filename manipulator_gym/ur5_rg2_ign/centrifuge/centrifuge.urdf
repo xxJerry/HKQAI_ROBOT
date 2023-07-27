@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="centrifuge">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.010723 9.3157E-17 0.11397"
+        rpy="0 0 0" />
+      <mass
+        value="32.665" />
+      <inertia
+        ixx="1.1034"
+        ixy="-6.3205E-17"
+        ixz="0.060824"
+        iyy="1.2701"
+        iyz="-5.3485E-17"
+        izz="1.8647" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/base_link.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/base_link.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="body_cover_joint"
+    type="revolute">
+    <origin
+      xyz="-0.22 -0.184 0.34"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="cover_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="0"
+      upper="3.14"
+      effort="100"
+      velocity="10" />
+  </joint>
+  <link
+    name="cover_link">
+    <inertial>
+      <origin
+        xyz="0.24141 0.18386 -0.0071111"
+        rpy="0 0 0" />
+      <mass
+        value="15.374" />
+      <inertia
+        ixx="0.27439"
+        ixy="0.00022856"
+        ixz="0.011065"
+        iyy="0.27698"
+        iyz="6.338E-05"
+        izz="0.53615" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0.22 0.184 -0.34"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/cover_link.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0.22 0.184 -0.34"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/cover_link.stl" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint
+    name="cover_button_joint"
+    type="prismatic">
+    <origin
+      xyz="0.35 0.318 0.04"
+      rpy="0 0 0" />
+    <parent
+      link="cover_link" />
+    <child
+      link="button_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1"
+      upper="1"
+      effort="10"
+      velocity="1" />
+  </joint>
+  <link
+    name="button_link">
+    <inertial>
+      <origin
+        xyz="1.5654E-05 -3.1411E-06 -0.0099669"
+        rpy="0 0 0" />
+      <mass
+        value="0.0063031" />
+      <inertia
+        ixx="3.6873E-07"
+        ixy="9.769E-11"
+        ixz="-1.0327E-09"
+        iyy="3.6936E-07"
+        iyz="2.0723E-10"
+        izz="3.1484E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="-0.13 -0.134 -0.38"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/button_link.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.13 -0.134 -0.38"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="meshes/button_link.stl" />
+      </geometry>
+    </collision>
+  </link>
+
+</robot>
